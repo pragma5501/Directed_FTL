@@ -1,5 +1,0 @@
-
-clean
-make
-
-main

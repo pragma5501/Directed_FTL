@@ -16,7 +16,6 @@ GCCFLAGS += \
 OBJ_SRC += \
 	$(SRC_DIR)/main.c \
 	$(SRC_DIR)/FTL.c \
-	$(SRC_DIR)/ssd.c \
 	$(SRC_DIR)/util/queue.c \
 
 TARGET_OBJ =\

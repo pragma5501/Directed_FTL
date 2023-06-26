@@ -10,7 +10,7 @@ ssd_t* ssd_t_init () {
         return my_ssd; 
 }
 
-block_t* block_t_init (ssd_t* my_ssd) {
+block_t* block_t_init (ssd_t* my_ssd) {  
         int i;
         for (i = 0; i < BLOCK_NUM; i++) {
                 page_init(my_ssd->block[i]);

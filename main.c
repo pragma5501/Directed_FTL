@@ -58,6 +58,7 @@ int parse (char *text) {
         
         default:
                 printf("Error : request type is undefined!!\n");
+                break;
         }
         
 

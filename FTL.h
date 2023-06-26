@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "ssd.h"
-#include "queue.h"
+#include "util/queue.h"
 
 #define L_BLOCK_SIZE 4 * 1024
 
