@@ -11,7 +11,7 @@ enum IO {
         VALID = 0, // Valid  status
 };
 
-long long mapping_table[M_TABLE_SIZE];
+
 
 ssd_t* ssd_t_init ();
 block_t* block_t_init (ssd_t* my_ssd);

@@ -14,8 +14,7 @@
 // #define DEBUG 1
 #define DEBUG_PRINT 1
 
-ssd_t* my_ssd;
-_queue *free_q;
+
 
 enum TYPE {
         READ  = 0,
@@ -24,7 +23,7 @@ enum TYPE {
 };
 
 
-int parse (char *text) {
+int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
         double time;
         int type;
         int LBA;
@@ -64,13 +63,13 @@ int parse (char *text) {
 
 }
 
-int read_request (FILE* fp) {
+int read_request (FILE* fp, ssd_t* my_ssd, _queue* free_q) {
         char buf[BUFF_SIZE];
 
         int i = 0;
 
         while (fgets(buf, sizeof(buf), fp)) {
-                parse(buf);
+                parse(buf, my_ssd, free_q);
                 if (i++ >= 20) break;
         }
 
@@ -78,12 +77,16 @@ int read_request (FILE* fp) {
 
 int main (int argc, char** argv) {
         // initialize ssd
+        ssd_t* my_ssd;
         my_ssd = ssd_t_init();
+
+        
+        
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
 
-        free_q = q_init();
+        _queue* free_q = q_init();
         free_q = free_q_init(free_q);
 
         FILE* fp = fopen("./src/intern-trace", "r");
@@ -92,7 +95,7 @@ int main (int argc, char** argv) {
                 return 0;
         }
 
-        read_request(fp);
+        read_request(fp, my_ssd, free_q);
         fclose(fp);
 
         get_WAF(my_ssd);

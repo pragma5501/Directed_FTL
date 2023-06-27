@@ -1,5 +1,7 @@
 #include "FTL.h"
 
+long long mapping_table[M_TABLE_SIZE];
+
 ssd_t* ssd_t_init () {
         ssd_t* my_ssd = (ssd_t*)malloc(sizeof(ssd_t));
         block_t_init(my_ssd);

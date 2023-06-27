@@ -21,7 +21,4 @@ typedef struct ssd {
         long long traff_ftl;
 } ssd_t;
 
-double get_WAF (ssd_t* my_ssd) {
-        double WAF = my_ssd->traff_ftl / my_ssd->traff_client;
-        return WAF;
-}
+double get_WAF (ssd_t* my_ssd);
