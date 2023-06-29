@@ -11,7 +11,7 @@
 
 #define BUFF_SIZE 1024
 
-#define DEBUG 1
+// #define DEBUG 1
 #define DEBUG_PRINT 1
 
 
@@ -48,7 +48,6 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
 
         // write
         case WRITE:
-                printf("invalid_page_num : %d \n", my_ssd->block[0]->invalid_page_num);
                 my_ssd = trans_IO_to_ssd(my_ssd, free_q, LBA);
 
                 
@@ -69,11 +68,8 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
 int read_request (FILE* fp, ssd_t* my_ssd, _queue* free_q) {
         char buf[BUFF_SIZE];
 
-        int i = 0;
-
         while (fgets(buf, sizeof(buf), fp)) {
                 parse(buf, my_ssd, free_q);
-                if (i++ >= 20) break;
         }
 
 }
@@ -99,10 +95,10 @@ int main (int argc, char** argv) {
         read_request(fp, my_ssd, free_q);
         fclose(fp);
 
-        get_WAF(my_ssd);
+        printf("WAF : %2f\n\n", get_WAF(my_ssd));
         
         destroy_ssd(my_ssd);
-
+        q_destroy(free_q);
         return 0;
 }
 

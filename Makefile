@@ -10,6 +10,7 @@ INC_DIR = \
 GCCFLAGS += \
 	-g \
 	-fsanitize=address \
+	-fno-omit-frame-pointer \
 
 
 OBJ_SRC += \

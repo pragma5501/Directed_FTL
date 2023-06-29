@@ -6,7 +6,7 @@
 
 #define L_BLOCK_SIZE 4 * 1024
 
-#define M_TABLE_SIZE 8 * 1024 * 1024// 8589934592 // 8 * 1024 * 1024 * 1024
+#define M_TABLE_SIZE 8 * 1024 * 1024 * 100
 
 #define ST_BITMAP_SIZE (BLOCK_NUM) * (PAGE_NUM)
 
@@ -32,7 +32,7 @@ ssd_t* ssd_t_write (ssd_t* my_ssd, int PPN, int page_bit);
 void destroy_ssd (ssd_t* my_ssd);
 
 _queue* free_q_init (_queue* q);
-int free_q_pop (_queue* free_q);
+int free_q_pop (ssd_t* my_ssd,_queue* free_q);
 void init_mapping_table ();
 
 ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA);

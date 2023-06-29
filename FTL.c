@@ -12,7 +12,6 @@ ssd_t* ssd_t_init () {
         my_ssd->traff_client = 0;
         my_ssd->traff_ftl    = 0;
 
-        printf("bit: %d\n", my_ssd->block[0]->page_bitmap[0]);
         return my_ssd; 
 }
 
@@ -80,6 +79,7 @@ void destroy_ssd (ssd_t* my_ssd) {
         int i;
         for (i = 0; i < BLOCK_NUM; i++) {
                 free(my_ssd->block[i]->page_bitmap);
+                free(my_ssd->block[i]);
         }
         free(my_ssd->block);
         free(my_ssd);
@@ -90,17 +90,18 @@ void destroy_ssd (ssd_t* my_ssd) {
 
 // free block queue
 _queue* free_q_init (_queue* q) {
+        q->LBA = (int*)malloc(sizeof(int) * (QUEUE_SIZE));
         int i;
         for (i = 0; i < (int)QUEUE_SIZE; i++) {
                 q_push(q, i);
         }
         return q;
 }
-int free_q_pop (_queue* free_q) {
+int free_q_pop (ssd_t* my_ssd, _queue* free_q) {
         int PPN = q_pop(free_q);
 
         if (free_q->size < (THRESHOLD_FREE_Q) * (PAGE_NUM)) {
-                // gc
+                GC(my_ssd, free_q);
         }
         return PPN;
 }
@@ -110,44 +111,48 @@ void init_mapping_table () {
         for (i = 0; i < M_TABLE_SIZE; i++) {
                 mapping_table[i] = -1;
         }
-        printf("%lld ", mapping_table[0]);
 }
 
 ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA) {
+
         // Physhical Page Number
         int PPN;
         // if modify
         if (mapping_table[LBA] != -1) {
                 PPN = mapping_table[LBA];
                 ssd_t_write(my_ssd, PPN, INVALID);
+                printf("WAF : %2f\n\n", get_WAF(my_ssd));
         } 
-        
-        PPN = free_q_pop(free_q);
+        PPN = free_q_pop(my_ssd, free_q);
         mapping_table[LBA] = PPN;
 
         ssd_t_write(my_ssd, PPN, VALID);
         my_ssd->traff_client += 1;
 
-        printf("WAF : %2f\n\n", get_WAF(my_ssd));
+        
         return my_ssd;
 }
 
 void GC (ssd_t* my_ssd, _queue* free_q) {
+        printf("GC on\n");
         int block_n_victim = get_victim(my_ssd);
+        printf("victim block : %d\n", block_n_victim);
+        printf("invallid_page_num : %d\n", my_ssd->block[block_n_victim]->invalid_page_num);
         block_t* block_victim = my_ssd->block[block_n_victim];
 
         int i;
         for(i = 0; i < PAGE_NUM; i++) {
                 int page_bit = block_victim->page_bitmap[i];
-
+                q_push(free_q, block_n_victim * PAGE_NUM + i);
                 if (page_bit == INVALID) {
+                        printf("find_invalid");
                         continue;
                 }
                 // a page_bit is valid
                 int PPN = q_pop(free_q);
                 ssd_t_write(my_ssd, PPN, VALID);
 
-                q_push(free_q, block_n_victim * PAGE_NUM + i);
+                
         }
 
         page_erase(my_ssd->block[block_n_victim]->page_bitmap);

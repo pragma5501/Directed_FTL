@@ -3,14 +3,16 @@
 
 _queue* q_init () {
         _queue* q = (_queue*)malloc(sizeof(_queue));
-        q->head = 0;
-        q->tail = 0;
+        q->head = NULL;
+        q->tail = NULL;
+        q->next = NULL;
+        
         q->size = 0;
 
         return q;
 }
 
-_queue* q_push (_queue* q, int data) {
+_queue* q_push (_queue* , int data) {
         if (q->size >= QUEUE_SIZE) {
                 printf("Queue is full\n");
                 return q;
