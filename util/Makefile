@@ -9,8 +9,6 @@ INC_DIR = \
 
 GCCFLAGS += \
 	-g \
-	-O0 \
-	-Wall \
 	-fsanitize=address \
 
 
@@ -27,7 +25,7 @@ all : my_dftl
 
 my_dftl: $(TARGET_OBJ)
 	@mkdir -p $(BIN_DIR)
-	gcc -o    $(BIN_DIR)/$@  $^ -I$(INC_DIR)
+	gcc -o    $(BIN_DIR)/$@ $(GCCFLAGS) $^ -I$(INC_DIR)
 
 .c.o:
 	gcc -c $< -o $@ -I$(INC_DIR)

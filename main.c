@@ -11,7 +11,7 @@
 
 #define BUFF_SIZE 1024
 
-// #define DEBUG 1
+#define DEBUG 1
 #define DEBUG_PRINT 1
 
 
@@ -35,7 +35,7 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
                 printf("==========\n");
                 printf("time : %.9lf\n", time);
                 printf("type : %d\n",  type);
-                printf("LBA  : %d\n",  LBA / (1024 * 16 ) );
+                printf("LBA  : %d\n",  LBA);
                 printf("size : %d\n",  size);
                 printf("==========\n");
                 #endif
@@ -48,7 +48,10 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
 
         // write
         case WRITE:
-                trans_IO_to_ssd(my_ssd, free_q, LBA);
+                printf("invalid_page_num : %d \n", my_ssd->block[0]->invalid_page_num);
+                my_ssd = trans_IO_to_ssd(my_ssd, free_q, LBA);
+
+                
                 break;
                 
         // trim
@@ -78,10 +81,8 @@ int read_request (FILE* fp, ssd_t* my_ssd, _queue* free_q) {
 int main (int argc, char** argv) {
         // initialize ssd
         ssd_t* my_ssd;
-        my_ssd = ssd_t_init();
 
-        
-        
+        my_ssd = ssd_t_init();
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
@@ -99,6 +100,10 @@ int main (int argc, char** argv) {
         fclose(fp);
 
         get_WAF(my_ssd);
+        
+        destroy_ssd(my_ssd);
 
         return 0;
 }
+
+

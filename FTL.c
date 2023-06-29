@@ -2,66 +2,74 @@
 
 long long mapping_table[M_TABLE_SIZE];
 
+
+
 ssd_t* ssd_t_init () {
         ssd_t* my_ssd = (ssd_t*)malloc(sizeof(ssd_t));
-        block_t_init(my_ssd);
+        
+        my_ssd->block = block_t_init(my_ssd->block);
         
         my_ssd->traff_client = 0;
         my_ssd->traff_ftl    = 0;
 
+        printf("bit: %d\n", my_ssd->block[0]->page_bitmap[0]);
         return my_ssd; 
 }
 
-block_t* block_t_init (ssd_t* my_ssd) {  
+block_t** block_t_init (block_t** my_block) {  
+        my_block = (block_t**)malloc(sizeof(block_t*) * BLOCK_NUM);
         int i;
         for (i = 0; i < BLOCK_NUM; i++) {
-                page_init(my_ssd->block[i]);
+                my_block[i] = (block_t*)malloc(sizeof(block_t));
+                my_block[i]->invalid_page_num = 0;
+                page_init(my_block[i]);
         }
-
+        return my_block;
 }
 
-int* page_init (block_t* my_block) {
+void page_init (block_t* my_block) {
+        my_block->page_bitmap = (int*)malloc(sizeof(int) * PAGE_NUM);
+
         int i;
         for (i = 0; i < PAGE_NUM; i++) {
                 my_block->page_bitmap[i] = ERASED;
+                
         }
 
 }
 
-block_t* block_t_read (ssd_t* my_ssd, int block_n) {
-        return my_ssd->block[block_n];
+int* page_read (ssd_t* my_ssd, int block_n, int* page_tmp) {
+        memcpy(page_tmp, my_ssd->block[block_n]->page_bitmap, sizeof(int) * (PAGE_NUM));
+        return page_tmp;
 }
-
-block_t* block_t_erase (block_t* ssd_block) {
+int* page_erase (int* page) {
         int i;
         for(i = 0; i < PAGE_NUM; i++) {
-                ssd_block->page_bitmap[i] = ERASED;
+                page[i] = ERASED;
         }
-        return ssd_block;
+        return page;
+}
+int* page_write (int* ssd_page, int* page_tmp) {
+        page_erase(ssd_page);
+        memcpy(ssd_page, page_tmp, sizeof(int) * PAGE_NUM);
+        
+        return ssd_page;
 }
 
-block_t* block_t_write (block_t* ssd_block, block_t* tmp_block) {
-        // erase -> write
-        block_t_erase(ssd_block);
-        ssd_block = tmp_block;
-
-        return ssd_block;
-}
-
-ssd_t* ssd_t_write (ssd_t* my_ssd, int PBN) {
+ssd_t* ssd_t_write (ssd_t* my_ssd, int PPN, int page_bit) {
         // get the position of page from PBN
-        int block_n = (int)(PBN / (PAGE_NUM));
-        int page_n = PBN % (PAGE_NUM);
+        int block_n = (int)(PPN / (PAGE_NUM));
+        int page_n = PPN % (PAGE_NUM);
 
-        // read
-        block_t* block_tmp = block_t_read(my_ssd, block_n);
+        // just write
+        my_ssd->block[block_n]->page_bitmap[page_n] = page_bit;
 
-        // erase -> write
-        block_t_write(my_ssd->block[block_n], block_tmp);
-
+        // if invalid 
+        if (page_bit == INVALID) {
+                my_ssd->block[block_n]->invalid_page_num += 1;
+        }
         // traffic 
-        my_ssd->traff_client += 1;
-        my_ssd->traff_ftl    += (PAGE_NUM);
+        my_ssd->traff_ftl    += 1;
 
         return my_ssd;
 }
@@ -69,6 +77,11 @@ ssd_t* ssd_t_write (ssd_t* my_ssd, int PBN) {
 
 
 void destroy_ssd (ssd_t* my_ssd) {
+        int i;
+        for (i = 0; i < BLOCK_NUM; i++) {
+                free(my_ssd->block[i]->page_bitmap);
+        }
+        free(my_ssd->block);
         free(my_ssd);
 }
 
@@ -83,25 +96,71 @@ _queue* free_q_init (_queue* q) {
         }
         return q;
 }
+int free_q_pop (_queue* free_q) {
+        int PPN = q_pop(free_q);
 
-void* init_mapping_table() {
+        if (free_q->size < (THRESHOLD_FREE_Q) * (PAGE_NUM)) {
+                // gc
+        }
+        return PPN;
+}
+
+void init_mapping_table () {
         int i;
         for (i = 0; i < M_TABLE_SIZE; i++) {
                 mapping_table[i] = -1;
         }
-        
+        printf("%lld ", mapping_table[0]);
 }
 
 ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA) {
-        int PBN;
-        if (mapping_table[LBA] == -1) {
-                PBN = q_pop(free_q);
-                mapping_table[LBA] = PBN;
+        // Physhical Page Number
+        int PPN;
+        // if modify
+        if (mapping_table[LBA] != -1) {
+                PPN = mapping_table[LBA];
+                ssd_t_write(my_ssd, PPN, INVALID);
         } 
+        
+        PPN = free_q_pop(free_q);
+        mapping_table[LBA] = PPN;
 
-        PBN = mapping_table[LBA];
+        ssd_t_write(my_ssd, PPN, VALID);
+        my_ssd->traff_client += 1;
 
-        my_ssd = ssd_t_write(my_ssd, PBN);
-
+        printf("WAF : %2f\n\n", get_WAF(my_ssd));
         return my_ssd;
+}
+
+void GC (ssd_t* my_ssd, _queue* free_q) {
+        int block_n_victim = get_victim(my_ssd);
+        block_t* block_victim = my_ssd->block[block_n_victim];
+
+        int i;
+        for(i = 0; i < PAGE_NUM; i++) {
+                int page_bit = block_victim->page_bitmap[i];
+
+                if (page_bit == INVALID) {
+                        continue;
+                }
+                // a page_bit is valid
+                int PPN = q_pop(free_q);
+                ssd_t_write(my_ssd, PPN, VALID);
+
+                q_push(free_q, block_n_victim * PAGE_NUM + i);
+        }
+
+        page_erase(my_ssd->block[block_n_victim]->page_bitmap);
+}
+
+// select a block that has most invalid page
+int get_victim (ssd_t* my_ssd) {
+        int max = INT_MIN;
+
+        int i;
+        for (i = 0; i < BLOCK_NUM; i++ ) {
+                int tmp = my_ssd->block[i]->invalid_page_num;
+                max = (tmp > max) ? tmp : max;
+        }
+        return max;
 }
