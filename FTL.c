@@ -87,16 +87,16 @@ void destroy_ssd (ssd_t* my_ssd) {
 
 
 
-
 // free block queue
 _queue* free_q_init (_queue* q) {
-        q->LBA = (int*)malloc(sizeof(int) * (QUEUE_SIZE));
         int i;
         for (i = 0; i < (int)QUEUE_SIZE; i++) {
                 q_push(q, i);
         }
+        printf("queue size : %d\n", q->size);
         return q;
 }
+
 int free_q_pop (ssd_t* my_ssd, _queue* free_q) {
         int PPN = q_pop(free_q);
 
@@ -113,6 +113,8 @@ void init_mapping_table () {
         }
 }
 
+
+
 ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA) {
 
         // Physhical Page Number
@@ -122,10 +124,12 @@ ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA) {
                 PPN = mapping_table[LBA];
                 ssd_t_write(my_ssd, PPN, INVALID);
                 printf("WAF : %2f\n\n", get_WAF(my_ssd));
-        } 
+        }
+
         PPN = free_q_pop(my_ssd, free_q);
         mapping_table[LBA] = PPN;
 
+        printf("LBA -> PPN : %d -> %d\n", LBA, PPN);
         ssd_t_write(my_ssd, PPN, VALID);
         my_ssd->traff_client += 1;
 

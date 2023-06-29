@@ -82,9 +82,8 @@ int main (int argc, char** argv) {
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
-
-        _queue* free_q = q_init();
-        free_q = free_q_init(free_q);
+        _queue* free_q = free_q_init(q_init());
+        
 
         FILE* fp = fopen("./src/intern-trace", "r");
         if( fp == NULL ) {

@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define QUEUE_SIZE 137438953472
+#define QUEUE_SIZE 8 * 1024 * 1024 * 100
 
 typedef struct _q {
         int head;
         int tail;
         int size;
-        int* LBA;
+        int LBA[QUEUE_SIZE];
 } _queue;
 
 _queue* q_init();
