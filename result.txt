@@ -1,0 +1,6 @@
+queue size : 8589934592
+traffic_ftl    : 235929602
+traffic_client : 235929600
+WAF : 1.000000000
+
+free q size : 8354005502

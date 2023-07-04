@@ -9,9 +9,9 @@
 
 #define M_TABLE_SIZE 8 * 1024 * 1024 * 100
 
+#define THRESHOLD_FREE_Q 8354004994
 
 
-#define THRESHOLD_FREE_Q 8354004992
 
 enum IO {
         ERASED = 1, // Erased status
@@ -23,13 +23,13 @@ enum IO {
 };
 
 
+
+
 ssd_t* ssd_t_init ();
 block_t** block_t_init (block_t** my_block);
 void page_init (block_t* my_block);
 
-int64_t* page_read (ssd_t* my_ssd, int64_t block_n, int64_t* page_tmp);
 int* page_erase (int* page);
-int* page_write (int* ssd_page, int* page_tmp);
 
 ssd_t* ssd_t_write (ssd_t* my_ssd, int64_t PPN, int page_bit, int64_t LBA);
 

@@ -49,7 +49,6 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
         // write
         case WRITE:
                 my_ssd = trans_IO_to_ssd(my_ssd, free_q, LBA);
-                
                 break;
                 
         // trim
@@ -75,14 +74,12 @@ int read_request (FILE* fp, ssd_t* my_ssd, _queue* free_q) {
 
 int main (int argc, char** argv) {
         // initialize ssd
-        ssd_t* my_ssd;
-
-        my_ssd = ssd_t_init();
+        ssd_t* my_ssd = ssd_t_init();
+        _queue* free_q = free_q_init(q_init());
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
-        _queue* free_q = free_q_init(q_init());
-        
+
 
         FILE* fp = fopen("./src/intern-trace", "r");
         if( fp == NULL ) {
@@ -95,8 +92,10 @@ int main (int argc, char** argv) {
 
         printf("WAF : %.9f\n\n", get_WAF(my_ssd));
         printf("free q size : %ld\n", free_q->size);
+
         destroy_ssd(my_ssd);
         q_destroy(free_q);
+
         return 0;
 }
 
