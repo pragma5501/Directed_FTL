@@ -3,40 +3,53 @@
 
 _queue* q_init () {
         _queue* q = (_queue*)malloc(sizeof(_queue));
+
         q->head = 0;
         q->tail = 0;
         q->size = 0;
 
+        
+        q->block = (block_t**)malloc(sizeof(block_t**) * QUEUE_SIZE);
+
+        int i;
+        for (i = 0; i < QUEUE_SIZE; i++) {
+                q->block[i] = (block_t*)malloc(sizeof(block_t));
+        }
+
         return q;
 }
 
-_queue* q_push (_queue* q, int64_t data) {
+_queue* q_push (_queue* q, block_t* block_addr) {
         if (q->size >= QUEUE_SIZE) {
                 printf("Queue is full\n");
                 return q;
         }
 
-        q->LBA[q->tail] = data;
+        q->block[q->tail] = block_addr;
         
         q->tail = (q->tail + 1) % (QUEUE_SIZE);
         q->size++;
         return q;
 }       
 
-int64_t q_pop (_queue* q) {
+block_t* q_pop (_queue* q) {
         if (q->size == 0) {
                 printf("Queue is empty\n");
-                return -1;
+                return (block_t*)NULL;
         }
-        int64_t data = q->LBA[q->head];
+        block_t* block_addr = q->block[q->head];
         
         q->head = (q->head + 1) % (QUEUE_SIZE);
 
 
         q->size--;
-        return data;
+        return block_addr;
 }
 
 _queue* q_destroy (_queue* q) {
+        int i;
+        for (i = 0; i < QUEUE_SIZE; i++) {
+                free(q->block[i]);
+        }
         free(q);
 } 

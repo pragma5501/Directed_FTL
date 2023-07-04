@@ -2,14 +2,13 @@
 #include <string.h>
 #include <limits.h>
 #include <stdint.h>
-#include "ssd.h"
-#include "util/queue.h"
+#include "queue.h"
 
 #define L_BLOCK_SIZE 4 * 1024
 
 #define M_TABLE_SIZE 8 * 1024 * 1024 * 100
 
-#define THRESHOLD_FREE_Q 8354004994
+#define THRESHOLD_FREE_Q 100
 
 
 
@@ -26,21 +25,21 @@ enum IO {
 
 
 ssd_t* ssd_t_init ();
-block_t** block_t_init (block_t** my_block);
+ssd_t* block_t_init (ssd_t* my_ssd);
 void page_init (block_t* my_block);
 
 int* page_erase (int* page);
 
-ssd_t* ssd_t_write (ssd_t* my_ssd, int64_t PPN, int page_bit, int64_t LBA);
+ssd_t* ssd_t_write (ssd_t* my_ssd, int PPN, int page_bit, int LBA);
 
 void destroy_ssd (ssd_t* my_ssd);
 
-_queue* free_q_init (_queue* q);
-int64_t free_q_pop (ssd_t* my_ssd,_queue* free_q);
+_queue* free_q_init (ssd_t* my_ssd, _queue* q);
+int free_q_pop (ssd_t* my_ssd,_queue* free_q);
 void init_mapping_table ();
 
-ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int64_t LBA);
+ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA);
 
 // Garbage Colloection
 int GC (ssd_t* my_ssd, _queue* free_q);
-int64_t get_victim (ssd_t* my_ssd);
+int get_victim (ssd_t* my_ssd);

@@ -9,7 +9,7 @@ INC_DIR = \
 
 GCCFLAGS += \
 	-g \
-	# -fsanitize=address \
+	-fsanitize=address \
 
 
 OBJ_SRC += \

@@ -14,8 +14,6 @@
 // #define DEBUG 1
 #define DEBUG_PRINT 1
 
-
-
 enum TYPE {
         READ  = 0,
         WRITE = 1,
@@ -75,7 +73,7 @@ int read_request (FILE* fp, ssd_t* my_ssd, _queue* free_q) {
 int main (int argc, char** argv) {
         // initialize ssd
         ssd_t* my_ssd = ssd_t_init();
-        _queue* free_q = free_q_init(q_init());
+        _queue* free_q = free_q_init(my_ssd, q_init());
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
@@ -91,7 +89,7 @@ int main (int argc, char** argv) {
         fclose(fp);
 
         printf("WAF : %.9f\n\n", get_WAF(my_ssd));
-        printf("free q size : %ld\n", free_q->size);
+        printf("free q size : %d\n", free_q->size);
 
         destroy_ssd(my_ssd);
         q_destroy(free_q);

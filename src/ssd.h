@@ -3,14 +3,15 @@
 
 #define PAGE_SIZE 4 * 1024 // Byte
 #define BLOCK_SIZE 512 * (PAGE_SIZE) // 512 page // Byte
-#define SSD_SIZE 32 * 1024 * 1024 * 1024 * 1024
+#define SSD_SIZE 32 * 1024 * 1024 * 1024
 
 #define PAGE_NUM 512
-#define BLOCK_NUM 16 * 1024 * 1024
+#define BLOCK_NUM 4 * 1024
 
 
 typedef struct block {
-        int64_t* LBA;
+        int offset;
+        int* LBA;
 
         int *page_bitmap;  // status
         int invalid_page_num;
@@ -19,10 +20,13 @@ typedef struct block {
 
 typedef struct ssd {
         block_t **block;
-
+        int       idx_block;
+        
+        block_t  *block_op;
+        int       idx_block_op;
         // traffic for WAF
-        int64_t traff_client;
-        int64_t traff_ftl;
+        int traff_client;
+        int traff_ftl;
 
         int flag_GC;
 } ssd_t;
