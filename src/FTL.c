@@ -77,13 +77,14 @@ ssd_t* ssd_t_write (ssd_t* my_ssd, int PPN, int page_bit, int LBA) {
         // get the position of page from PBN
         int block_n = (int)(PPN / (PAGE_NUM));
         int page_n = PPN % (PAGE_NUM);
-
+        //printf("block offset : %d\n", block_n);
         // just write
         my_ssd->block[block_n]->page_bitmap[page_n] = page_bit;
         my_ssd->block[block_n]->LBA[page_n] = LBA;
 
         // if invalid 
         if (page_bit == INVALID) {
+                //printf("invalid block offset : %d\n", block_n);
                 my_ssd->block[block_n]->invalid_page_num += 1;
                 return my_ssd;
         }
@@ -131,12 +132,12 @@ _queue* free_q_init (ssd_t* my_ssd, _queue* q) {
 int free_q_pop (ssd_t* my_ssd, _queue* free_q) {
         
         if (my_ssd->idx_block_op >= PAGE_NUM) {
-                my_ssd->block_op = q_pop(free_q);
                 my_ssd->idx_block_op = 0;
-                printf("block offset : %d\n", my_ssd->block_op->offset / (PAGE_NUM));
+                my_ssd->block_op = q_pop(free_q);
+                
                 GC(my_ssd, free_q);
         }
-        
+
         int PPN = get_PPN(my_ssd);
         my_ssd->idx_block_op += 1;
 
@@ -164,7 +165,6 @@ ssd_t* trans_IO_to_ssd (ssd_t* my_ssd,_queue* free_q, int LBA) {
         }
 
         PPN = free_q_pop(my_ssd, free_q);
-        
 
         //printf("LBA -> PPN : %d -> %d\n", LBA, PPN);
         my_ssd = ssd_t_write(my_ssd, PPN, VALID, LBA);
@@ -181,8 +181,8 @@ int GC (ssd_t* my_ssd, _queue* free_q) {
         if (free_q->size > THRESHOLD_FREE_Q) {
                 return -1;
         }
-        printf("GC on\n");
-        printf("free_q size : %d\n", free_q->size);
+        //printf("GC on\n");
+        //printf("free_q size : %d\n", free_q->size);
         my_ssd->flag_GC = GC_T;
 
         int block_n_victim = get_victim(my_ssd);
@@ -201,11 +201,15 @@ int GC (ssd_t* my_ssd, _queue* free_q) {
                 int LBA = block_victim->LBA[i];
                 ssd_t_write(my_ssd, PPN, VALID, LBA);
         }
+        //printf("GC result\n");
+        //printf("victim block : %d\n", block_n_victim);
+        //printf("invalid page num : %d\n", my_ssd->block[block_n_victim]->invalid_page_num);
 
-        page_erase(my_ssd->block[block_n_victim]->page_bitmap);
+        // page_erase(my_ssd->block[block_n_victim]->page_bitmap);
         my_ssd->block[block_n_victim]->invalid_page_num = 0;
 
         q_push(free_q, my_ssd->block[block_n_victim]);
+
 
         my_ssd->flag_GC = GC_F;
 }

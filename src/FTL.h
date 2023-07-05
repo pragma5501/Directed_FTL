@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include "queue.h"
 
-#define L_BLOCK_SIZE 4 * 1024
 
-#define M_TABLE_SIZE 8 * 1024 * 1024 * 100
 
-#define THRESHOLD_FREE_Q 100
+#define M_TABLE_SIZE 4 * 8 * 1024 * 1024 
+
+#define THRESHOLD_FREE_Q 5
 
 
 

@@ -20,6 +20,8 @@ enum TYPE {
         TRIM  = 3,                
 };
 
+long long progress; 
+int GB;
 
 int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
         double time;
@@ -47,6 +49,12 @@ int parse (char *text, ssd_t* my_ssd, _queue* free_q) {
         // write
         case WRITE:
                 my_ssd = trans_IO_to_ssd(my_ssd, free_q, LBA);
+                if ((++progress) % 262144 == 0) {
+                        GB++;
+                        progress = 0;
+                        printf("[Progress %d GB] : WAF : %.10f\n", GB, get_WAF(my_ssd));
+                        //printf("[Progress %d GB]\n", GB);
+                }
                 break;
                 
         // trim
@@ -77,14 +85,14 @@ int main (int argc, char** argv) {
 
         // initialze mapping table by set value of mapping table -1
         init_mapping_table();
-
-
+        
         FILE* fp = fopen("./src/intern-trace", "r");
         if( fp == NULL ) {
                 printf("Error : File not opened\n");
                 return 0;
         }
-
+        progress = 0;
+        GB = 0;
         read_request(fp, my_ssd, free_q);
         fclose(fp);
 

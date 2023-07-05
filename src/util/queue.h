@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "ssd.h"
 
-#define QUEUE_SIZE 16 * 1024 * 1024
+#define QUEUE_SIZE 4 * 16 * 1024
 
 typedef struct _q {
         int head;

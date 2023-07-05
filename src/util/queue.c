@@ -26,7 +26,7 @@ _queue* q_push (_queue* q, block_t* block_addr) {
         }
 
         q->block[q->tail] = block_addr;
-        
+        //printf("block offset : %d\n", block_addr->offset / PAGE_NUM);
         q->tail = (q->tail + 1) % (QUEUE_SIZE);
         q->size++;
         return q;

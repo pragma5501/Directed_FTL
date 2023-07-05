@@ -6,7 +6,7 @@
 #define SSD_SIZE 32 * 1024 * 1024 * 1024
 
 #define PAGE_NUM 512
-#define BLOCK_NUM 4 * 1024
+#define BLOCK_NUM 4 * 16 * 1024
 
 
 typedef struct block {
@@ -25,8 +25,8 @@ typedef struct ssd {
         block_t  *block_op;
         int       idx_block_op;
         // traffic for WAF
-        int traff_client;
-        int traff_ftl;
+        int64_t traff_client;
+        int64_t traff_ftl;
 
         int flag_GC;
 } ssd_t;
